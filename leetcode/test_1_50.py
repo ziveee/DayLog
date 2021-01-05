@@ -82,10 +82,14 @@ class SolutionTest(unittest.TestCase):
         self.assertEqual(self.__test_cls.reverse(-123), -321)
         print("test 07 ok. ")
 
+    def test_08(self):
+        self.assertEqual(self.__test_cls.myAtoi("42"), 42)
+        print("test 08 ok. ")
+
 
 if __name__ == "__main__":
     # unittest.main()
     __test_cls = SolutionTest()
     __test_cls.setUp()
-    __test_cls.test_07()
+    __test_cls.test_08()
     __test_cls.tearDown()

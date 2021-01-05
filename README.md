@@ -1,2 +1,3 @@
 # DayLog
-工作gg
+
+工作GG

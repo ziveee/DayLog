@@ -162,3 +162,178 @@ class Solution:
             res = res * 10 + temp
 
         return res if x > 0 else -res
+
+    def myAtoi(self, s):
+        def check_num(x):  # 判断字符x是否为数字
+            if x not in ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]:
+                return False
+            return True
+
+        s = s.strip(" ")  # 删除字符串开头空格
+        if len(s) == 0:
+            return 0
+
+        if len(s) == 1:
+            return int(s[0]) if check_num(s[0]) else 0
+
+        if s[0] not in ["+", "-", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]:
+            return 0
+
+        if s[:2] in ["+-", "-+", "++", "--"]:
+            return 0
+
+        int_max = 2147483647
+        int_min = -2147483648
+        boundry = 214748364
+
+        if s[0] in ["+", "-"]:  # 符号开头
+            res = "" if s[0] == "+" else "-"
+            insert_flag = False  # 代表不插入(即为0)
+            for i, x in enumerate(s[1:]):
+                if check_num(x):  # 当前位是数字
+                    if not insert_flag and x != "0":  # 判断是否插入(排除符号后边的0)
+                        insert_flag = True
+
+                    if insert_flag:
+                        res += x
+                        if s[0] == "-":
+                            if len(res[1:]) == 9 and int(res[1:]) > boundry:
+                                return int_min
+                            if (
+                                len(res[1:]) == 10
+                                and int(res[1:10]) == boundry
+                                and int(x) > 8
+                            ):
+                                return int_min
+                            if len(res[1:]) > 10:
+                                return int_min
+                        else:
+                            if len(res) == 9 and int(res) > boundry:
+                                return int_max
+                            if (
+                                len(res) == 10
+                                and int(res[:9]) == boundry
+                                and int(x) > 7
+                            ):
+                                return int_max
+                            if len(res) > 10:
+                                return int_max
+                else:
+                    return int(res) if len(res) > 0 and insert_flag else 0
+            return int(res) if insert_flag else 0
+        else:  # 数字开头
+            res = ""
+            insert_flag = False  # 代表不插入(即为0)
+            for i, x in enumerate(s):
+                if check_num(x):  # 当前位是数字
+                    if not insert_flag and x != "0":  # 判断是否插入(排除最前面的0)
+                        insert_flag = True
+
+                    if insert_flag:
+                        res += x
+                        if len(res) == 9 and int(res) > boundry:
+                            return int_max
+                        if len(res) == 10 and int(res[:9]) == boundry and int(x) > 7:
+                            return int_max
+                        if len(res) > 10:
+                            return int_max
+                else:
+                    return int(res) if len(res) > 0 else 0
+
+            return int(res) if insert_flag else 0
+
+    def myAtoi_re(self, s):
+        import re
+
+        # int_max = 2147483647
+        # int_min = -2147483648
+        # s = s.lstrip()
+        # num_re = re.compile(r"^[\+\-]?\d+")
+        # num = num_re.findall(s)
+        # num = int(*num)
+        # return max(min(num, int_max), int_min)
+        return max(
+            min(int(*re.findall(r"^[\+\-]?\d+", s.lstrip(" "))), 2 ** 31 - 1),
+            -(2 ** 31),
+        )
+
+    def myAtoi_automaton(self, s):
+        s = s.lstrip(" ")
+        table = {
+            # +/-, number, other
+            "start": ["signed", "number", "end"],
+            "signed": ["end", "number", "end"],
+            "number": ["end", "number", "end"],
+            "other": ["end", "end", "end"],
+        }
+
+        def is_number(c):
+            if c in ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]:
+                return True
+            return False
+
+        def get_col(c):
+            if c in ["+", "-"]:
+                return 0
+            elif is_number(c):
+                return 1
+            return 2
+
+        ans = 0
+        sign = 1
+        state = "start"
+        int_max = 2147483647
+        int_min = -2147483648
+
+        def get_c(c):
+            nonlocal state, ans, sign
+            state = table[state][get_col(c)]
+            if state == "number":
+                if ans > 214748364:
+                    return int_max if sign == 1 else int_min
+
+                elif ans == 214748364:
+                    return int_max if sign == 1 and int(c) > 7 else ans * 10 + int(c)
+                    return (
+                        int_min
+                        if sign == -1 and int(c) > 8
+                        else sign * (ans * 10 + int(c))
+                    )
+                ans = ans * 10 + int(c)
+
+            elif state == "signed":
+                sign = 1 if c == "+" else -1
+
+        for x in s:
+            if get_c(x):
+                return get_c(x)
+            if state == "end":
+                return sign * ans
+
+        return sign * ans
+
+    def isPalindrome(self, x):
+        if str(x) == str(x)[::-1]:
+            return True
+        return False
+
+    def isPalindrome_1(self, x):
+        if x < 0:
+            return False
+        if x < 10:
+            return True
+        seq = list()
+        while x // 10 != 0:
+            seq.append(x % 10)
+            x = x // 10
+        seq.append(x % 10)
+
+        for i in range(len(seq) // 2):
+            if seq[i] != seq[-i - 1]:
+                return False
+
+        return True
+
+
+test = Solution()
+print(test.isPalindrome_1(1001))
